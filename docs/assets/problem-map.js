@@ -135,7 +135,9 @@ const PROBLEM_MAP = [
       'Test with query pairs that are lexically close but semantically opposite, such as cancel versus renew.',
     ],
     signals: [
-      { re: 'cosine|embedding|vector (search|store|distance)|similarity score', w: 5, label: 'embedding similarity involved' },
+      // A bare "vector store" mention is generic RAG vocabulary, not evidence of
+      // a semantic/embedding mismatch, so it does not earn a signal on its own.
+      { re: 'cosine|embedding|similarity score|vector (search|similarity|distance)', w: 5, label: 'embedding similarity involved' },
       { re: '0\\.\\d{2}', w: 2, label: 'similarity scores in the report' },
       { re: 'semantically opposite|opposite meaning|means the opposite', w: 7, label: 'lexically close but opposite meaning' },
       { re: 'top[- ]?k|rank(s|ed|ing)? \\d+|reranker?', w: 4, label: 'ranking problem' },
@@ -249,7 +251,7 @@ const PROBLEM_MAP = [
       'Give one concrete worked example of the range you want instead of asking for creativity.',
     ],
     signals: [
-      { re: 'flat|bland|generic|boring|literal', w: 5, label: 'flat output' },
+      { re: '\\bflat\\b|bland|generic|boring|literal', w: 5, label: 'flat output' },
       { re: 'near[- ]?identical|basically the same|all (three|the options) (are|look) the same', w: 6, label: 'variants are not distinct' },
       { re: 'temperature', w: 4, label: 'temperature tuning tried' },
       { re: 'restat(es|ing|ed) the (input|prompt|question)', w: 6, label: 'restates the input' },
@@ -364,7 +366,8 @@ const PROBLEM_MAP = [
     ],
     signals: [
       { re: 'deadlock|circular (wait|dependency)|waits? for .{0,30} waits? for', w: 8, label: 'circular wait' },
-      { re: 'hangs?|never (finishes|completes|times out)|no timeout', w: 6, label: 'pipeline hangs with no timeout' },
+      // \b matters here: an unanchored "hang" also matches inside "changed".
+      { re: '\\bhangs?\\b|never (finishes|completes|times out)|no timeout', w: 6, label: 'pipeline hangs with no timeout' },
       { re: 'restart it by hand|manual restart|we restart', w: 5, label: 'manual restart required' },
       { re: 'pipeline|ci/?cd|deploy(ment)? job|ingestion job', w: 4, label: 'pipeline or deploy job' },
       { re: 'each other|mutual', w: 3, label: 'mutual dependency' },
@@ -386,7 +389,7 @@ const PROBLEM_MAP = [
     ],
     signals: [
       { re: 'works locally|local is (green|fine)|only (in|on) (prod|production|staging)', w: 7, label: 'local works, deployed does not' },
-      { re: '401|403|unauthori[sz]ed|invalid api key|authentication failed', w: 6, label: 'auth failure on deploy' },
+      { re: '\\b401|\\b403|unauthori[sz]ed|invalid api key|authentication failed', w: 6, label: 'auth failure on deploy' },
       { re: 'secret|env(ironment)? var|credential|api key .{0,20}(missing|wrong|stale|cached)', w: 6, label: 'secret or env var problem' },
       { re: 'version (skew|mismatch)|minor version behind|out of date (client|sdk|library)', w: 7, label: 'client / endpoint version skew' },
       { re: 'cached layer|stale (config|value|image)|old value', w: 5, label: 'stale cached configuration' },
