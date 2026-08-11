@@ -10,7 +10,9 @@
 <meta property="og:title" content="WFGY 16 Problem Map — LLM & RAG Debugger">
 <meta property="og:description" content="Stop guessing why your RAG pipeline is wrong. Map the bug to one of 16 reproducible failure modes and get the exact fix to read first.">
 <meta property="og:type" content="website">
-<link rel="stylesheet" href="assets/styles.css">
+<!-- ?v= is bumped on every asset change: GitHub Pages caches these aggressively
+     and returning visitors would otherwise keep running an older classifier. -->
+<link rel="stylesheet" href="assets/styles.css?v=1.0.1">
 </head>
 <body>
 
@@ -278,7 +280,7 @@ OPENAI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct"</code></pre>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/problem-map.js"></script>
-<script src="assets/app.js"></script>
+<script src="assets/problem-map.js?v=1.0.1"></script>
+<script src="assets/app.js?v=1.0.1"></script>
 </body>
 </html>
