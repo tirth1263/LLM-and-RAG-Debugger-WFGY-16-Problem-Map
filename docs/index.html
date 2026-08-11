@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WFGY 16 Problem Map — LLM & RAG Debugger</title>
+<meta name="description" content="A 16-mode, map-based debugger that turns messy LLM and RAG bugs into reproducible failure modes, each linked to a concrete fix in the WFGY Problem Map. Nebius and OpenAI compatible.">
+<meta name="author" content="Tirth Rank">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
+<meta property="og:title" content="WFGY 16 Problem Map — LLM & RAG Debugger">
+<meta property="og:description" content="Stop guessing why your RAG pipeline is wrong. Map the bug to one of 16 reproducible failure modes and get the exact fix to read first.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<a class="skip" href="#debugger">Skip to the debugger</a>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">🧩</span>
+      <span class="brand-text">WFGY&nbsp;<b>16 Problem Map</b></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#debugger">Debugger</a>
+      <a href="#map">The 16 modes</a>
+      <a href="#how">How it works</a>
+      <a href="#quickstart">Quickstart</a>
+      <a class="btn btn-ghost btn-sm" id="repoLinkTop" href="https://github.com/tirth1263/LLM-and-RAG-Debugger-WFGY-16-Problem-Map" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle colour theme">◐</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ------------------------------------------------------------------ -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Nebius compatible · OpenAI compatible · MIT licensed</p>
+      <h1>Your RAG bug already has a number.<br><span class="grad">Stop guessing which one.</span></h1>
+      <p class="lede">
+        Most LLM and RAG debugging is vibes: swap the embedding model, nudge the prompt,
+        hope it goes away. This debugger routes a messy bug report to exactly one of
+        <b>16 reproducible failure modes</b> from the WFGY Problem Map, tells you which
+        document to open first, and gives you a patch you can apply at the prompt layer
+        without touching your infrastructure.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#debugger">Diagnose a bug →</a>
+        <a class="btn btn-ghost" href="#map">Browse the 16 modes</a>
+      </div>
+      <div class="hero-stats">
+        <div><b>16</b><span>failure modes</span></div>
+        <div><b>0</b><span>infra changes needed</span></div>
+        <div><b>2</b><span>engines: offline + live LLM</span></div>
+        <div><b>1</b><span>file to run</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="debugger" class="section">
+    <div class="wrap">
+      <h2 class="sec-title"><span class="sec-num">01</span> The debugger</h2>
+      <p class="sec-sub">
+        Paste a trace, a log, or a prompt / answer pair. Describe it the way you would
+        in a team channel — symptom first, no diagnosis.
+      </p>
+
+      <div class="engine-bar" role="radiogroup" aria-label="Diagnosis engine">
+        <button class="engine active" data-engine="offline" role="radio" aria-checked="true" type="button">
+          <b>Offline engine</b><span>Runs in your browser. No key, no network.</span>
+        </button>
+        <button class="engine" data-engine="live" role="radio" aria-checked="false" type="button">
+          <b>Live LLM</b><span>Your own OpenAI compatible endpoint.</span>
+        </button>
+      </div>
+
+      <div class="panel-config" id="liveConfig" hidden>
+        <div class="cfg-grid">
+          <label>Base URL
+            <input id="baseUrl" type="url" spellcheck="false" value="https://api.tokenfactory.nebius.com/v1/" placeholder="https://api.tokenfactory.nebius.com/v1/">
+          </label>
+          <label>Model id
+            <input id="model" type="text" spellcheck="false" value="meta-llama/Meta-Llama-3.1-70B-Instruct" placeholder="meta-llama/Meta-Llama-3.1-70B-Instruct">
+          </label>
+          <label>API key
+            <input id="apiKey" type="password" spellcheck="false" autocomplete="off" placeholder="sk-… or your Nebius key">
+          </label>
+        </div>
+        <p class="cfg-note">
+          <b>Your key never leaves this browser tab.</b> This page is static — there is no
+          backend to send it to. The request goes straight from your browser to the endpoint
+          you typed, and the key is held in memory only (never written to storage).
+          Because it is a direct browser call, the endpoint must send CORS headers; if it
+          does not, use the offline engine or the
+          <button class="linklike" id="jumpCopyPrompt" type="button">copy-the-prompt</button>
+          route and paste it into any chat model.
+        </p>
+      </div>
+
+      <div class="debug-grid">
+        <div class="card card-input">
+          <div class="card-head">
+            <h3>Bug report</h3>
+            <div class="card-head-actions">
+              <button class="btn btn-tiny" id="clearBtn" type="button">Clear</button>
+            </div>
+          </div>
+          <textarea id="bugInput" rows="12" spellcheck="false" placeholder="Example:
+
+Retrieval is correct — I logged the chunks and the exact clause the user asked about is chunk #2. But the model still answers &quot;there is no cancellation window&quot; when the clause plainly says 14 days. Swapping the embedding model changed nothing."></textarea>
+          <div class="samples">
+            <span class="samples-label">Load a sample:</span>
+            <div class="chips" id="sampleChips"></div>
+          </div>
+          <div class="run-row">
+            <button class="btn btn-primary btn-run" id="runBtn" type="button">Diagnose</button>
+            <button class="btn btn-ghost" id="copyPromptBtn" type="button">Copy full prompt</button>
+            <span class="run-hint" id="runHint">Offline engine — instant, no key needed.</span>
+          </div>
+        </div>
+
+        <div class="card card-output" id="outputCard">
+          <div class="card-head">
+            <h3>Diagnosis</h3>
+            <span class="badge-engine" id="engineBadge">offline</span>
+          </div>
+          <div id="output" class="output">
+            <div class="empty-state">
+              <span class="empty-mark">🧭</span>
+              <p>No diagnosis yet.</p>
+              <p class="muted">Paste a bug on the left, or load one of the samples, then hit <b>Diagnose</b>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="map" class="section section-alt">
+    <div class="wrap">
+      <h2 class="sec-title"><span class="sec-num">02</span> The 16 modes</h2>
+      <p class="sec-sub">
+        The canonical taxonomy from the
+        <a href="https://github.com/onestardao/WFGY/tree/main/ProblemMap" target="_blank" rel="noopener">WFGY Problem Map 1.0</a>.
+        Numbers are stable identifiers — they are never renumbered or merged. Select any
+        row to see the tell and the first patch.
+      </p>
+
+      <div class="layer-legend">
+        <span class="lg lg-in">IN — input &amp; retrieval</span>
+        <span class="lg lg-re">RE — reasoning</span>
+        <span class="lg lg-st">ST — state &amp; memory</span>
+        <span class="lg lg-op">OP — ops &amp; deploy</span>
+      </div>
+
+      <div class="map-list" id="mapList"></div>
+
+      <p class="map-foot">
+        Once a bug is mapped to a number, you can apply the fix and expect it not to quietly
+        reappear in the same way.
+      </p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="how" class="section">
+    <div class="wrap">
+      <h2 class="sec-title"><span class="sec-num">03</span> How it works</h2>
+      <p class="sec-sub">A diagnostic layer in front of your app. Nothing in your stack changes.</p>
+
+      <div class="flow">
+        <div class="step"><span class="step-n">1</span><h4>You paste the mess</h4><p>Prompt, answer, retrieval trace, stack log. Symptom-first, exactly as it landed in your channel.</p></div>
+        <div class="step"><span class="step-n">2</span><h4>References load</h4><p>The CLI pulls <code>TXTOS.txt</code> and <code>ProblemMap/README.md</code> straight from the upstream WFGY repo, so the taxonomy is never a stale copy.</p></div>
+        <div class="step"><span class="step-n">3</span><h4>The firewall reasons</h4><p>A semantic-firewall system prompt forces diagnosis before prescription: quote the evidence, then pick the number.</p></div>
+        <div class="step"><span class="step-n">4</span><h4>You get a number</h4><p>One primary <b>No.X</b>, an optional secondary <b>No.Y</b>, a confidence level, the doc to open first, and a three-step patch.</p></div>
+      </div>
+
+      <div class="two-col">
+        <div class="note-card">
+          <h4>Two engines, same map</h4>
+          <p>
+            The <b>offline engine</b> is a transparent weighted-signal classifier that runs entirely
+            in your browser. It shows you every phrase it matched and what that phrase scored, so
+            you can argue with it. It is deterministic and needs no key — ideal for a first pass
+            and for demoing the taxonomy.
+          </p>
+          <p>
+            The <b>live engine</b> sends the same structured prompt to any OpenAI compatible
+            endpoint. It reads nuance the keyword scorer cannot, and it writes the patch steps in
+            the vocabulary of your specific bug. Use it when the offline result is low confidence
+            or the top two modes are close.
+          </p>
+        </div>
+        <div class="note-card">
+          <h4>Why a fixed taxonomy beats free-form advice</h4>
+          <p>
+            "Try improving your chunking" is not a fix, it is a mood. A number is falsifiable: it
+            names the layer that broke, predicts what you should see in the trace, and points at
+            one document. If the number is wrong the trace will say so, and you will have learned
+            something either way.
+          </p>
+          <p>
+            It also gives a team shared vocabulary. <i>"That's a No.2, not a No.1 — retrieval was
+            fine"</i> ends an argument that would otherwise cost an afternoon.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------------ -->
+  <section id="quickstart" class="section section-alt">
+    <div class="wrap">
+      <h2 class="sec-title"><span class="sec-num">04</span> Quickstart</h2>
+      <p class="sec-sub">Python 3.9+, two dependencies, one file. Works as a CLI or as a single notebook cell.</p>
+
+      <div class="code-grid">
+        <div class="code-card">
+          <div class="code-head"><span>Terminal</span><button class="btn btn-tiny copy" data-copy="#code-cli" type="button">Copy</button></div>
+<pre id="code-cli"><code>git clone https://github.com/tirth1263/LLM-and-RAG-Debugger-WFGY-16-Problem-Map.git
+cd LLM-and-RAG-Debugger-WFGY-16-Problem-Map
+
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+
+pip install -r requirements.txt
+python main.py</code></pre>
+        </div>
+
+        <div class="code-card">
+          <div class="code-head"><span>Nebius Token Factory</span><button class="btn btn-tiny copy" data-copy="#code-env" type="button">Copy</button></div>
+<pre id="code-env"><code># Nebius Token Factory
+NEBIUS_API_KEY="your_nebius_api_key"
+
+# The script reads OPENAI_API_KEY, so export the same value here
+OPENAI_API_KEY="$NEBIUS_API_KEY"
+
+# Nebius OpenAI compatible endpoint
+OPENAI_BASE_URL="https://api.tokenfactory.nebius.com/v1/"
+
+# Any Nebius model id
+OPENAI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct"</code></pre>
+        </div>
+      </div>
+
+      <p class="sec-sub sec-sub-tight">
+        Every variable is optional. Skip them all and the script asks for the key with
+        <code>getpass</code>, then for the base URL and model id, at runtime. For Colab, Jupyter
+        or a Nebius notebook, paste the whole of <code>main.py</code> into one cell and run it.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p class="footer-brand">🧩 WFGY 16 Problem Map — LLM &amp; RAG Debugger</p>
+      <p class="muted">Built by <a href="https://github.com/tirth1263" target="_blank" rel="noopener">Tirth Rank</a>. MIT licensed.</p>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/tirth1263/LLM-and-RAG-Debugger-WFGY-16-Problem-Map" target="_blank" rel="noopener">Repository</a>
+      <a href="https://github.com/onestardao/WFGY/tree/main/ProblemMap" target="_blank" rel="noopener">WFGY Problem Map</a>
+      <a href="https://github.com/onestardao/WFGY" target="_blank" rel="noopener">WFGY project</a>
+    </div>
+  </div>
+  <p class="wrap disclaimer">
+    Not affiliated with the upstream WFGY project. The Problem Map taxonomy and the numbering
+    belong to it and are MIT licensed there. This debugger is an independent client.
+  </p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/problem-map.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
