@@ -1,0 +1,10 @@
+# Normalise line endings so the repo stays LF regardless of contributor OS.
+* text=auto eol=lf
+
+# The notebook is generated from main.py, so it should not dominate the
+# language statistics with a duplicate copy of the script.
+notebooks/*.ipynb linguist-generated=true
+
+# docs/ is the deployed web app, not project documentation. Without this,
+# Linguist hides the HTML/CSS/JS that make up the live site.
+docs/** linguist-documentation=false
