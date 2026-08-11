@@ -281,6 +281,7 @@ LLM-and-RAG-Debugger-WFGY-16-Problem-Map/
 │       └── app.js                # Offline engine, live engine, UI
 │
 ├── LICENSE                       # MIT
+├── NOTICE.md                     # Upstream WFGY attribution
 └── README.md
 ```
 
@@ -362,7 +363,7 @@ Inspired by the `wfgy_llm_debugger` example in [Arindam200/awesome-ai-apps](http
 
 ## 📄 License
 
-[MIT](LICENSE) © 2026 Tirth Rank. WFGY / Problem Map content is MIT licensed in its original repository.
+[MIT](LICENSE) © 2026 Tirth Rank. WFGY / Problem Map content is MIT licensed in its original repository — see [NOTICE.md](NOTICE.md) for full third-party attribution.
 
 ---
 
